@@ -67,12 +67,20 @@ pytest -q                            # all green — your baseline
 This is the client's #1 fear: *"fix one pipeline, break the other 20–30."*
 
 1. Ask Claude Code to make a **naive** shared-function change, e.g.:
-   > "In `clean_column_names`, also drop any column whose name contains `email`."
-2. Run `pytest`. **`test_customers_silver.py` goes RED** — because customers relies
-   on the `email` column. The shared change broke a different pipeline.
+   > "In `strip_control_chars`, also drop any column whose name contains `email`
+   > (treat it as PII we shouldn't keep)."
+2. Run `pytest`. **`test_customers_silver.py` goes RED — and only that one** —
+   because customers' silver calls `strip_control_chars` and relies on the `email`
+   column; orders and payments have no `email`, so they stay green. The shared
+   change broke exactly one other pipeline, and the suite tells you which.
 3. Say to the client: *"This is the regression net. I didn't have to know customers
-   used email — its own test caught it. With ~30 pipelines, each one's test suite
-   guards the shared code."*
+   used email — its own test caught it, and the green tests told me orders and
+   payments were untouched. With ~30 pipelines, each one's test suite guards the
+   shared code."*
+
+> Note: target `strip_control_chars` (not `clean_column_names`) — it's the shared
+> function every silver pipeline actually calls. `clean_column_names` only runs in
+> orders *bronze*, so editing it would leave the whole suite green and the demo flat.
 4. Ask Claude Code to revert / narrow the change; `pytest` goes green again.
 
 That loop — change → full suite → red catches collateral damage → narrow the fix —

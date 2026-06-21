@@ -21,6 +21,7 @@ CONTRACTS: dict[str, dict[str, str]] = {
         "quantity": "int",
         "unit_price": "double",
         "status": "string",
+        "currency": "string",
     },
     "customers": {
         "customer_id": "int",

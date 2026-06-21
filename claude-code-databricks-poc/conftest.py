@@ -1,6 +1,15 @@
 """Local SparkSession for the test suite. Runs on any laptop, no cluster."""
 import os
 import sys
+import time
+
+# Pin the process timezone to UTC so timestamp tests are deterministic on any
+# machine (Databricks itself runs UTC). Without this, a SQL string->timestamp
+# cast resolves in UTC while Python's collect() renders in the local zone, so
+# the payments test drifts by the local offset on non-UTC laptops.
+os.environ["TZ"] = "UTC"
+if hasattr(time, "tzset"):
+    time.tzset()  # POSIX only; on Windows the CRT reads TZ directly
 
 import pytest
 from pyspark.sql import SparkSession

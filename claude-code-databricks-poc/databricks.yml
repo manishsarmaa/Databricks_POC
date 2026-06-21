@@ -11,7 +11,7 @@ targets:
     mode: development
     default: true
     workspace:
-      host: ${var.host}
+      host: https://dbc-b0b5dcd0-364a.cloud.databricks.com
     variables:
       catalog: workspace
       schema: poc
@@ -19,7 +19,7 @@ targets:
 variables:
   host:
     description: Databricks workspace URL
-    default: https://example.cloud.databricks.com
+    default: https://dbc-b0b5dcd0-364a.cloud.databricks.com
   catalog:
     default: workspace
   schema:

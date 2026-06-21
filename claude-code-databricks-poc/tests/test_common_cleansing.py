@@ -20,3 +20,10 @@ def test_strip_control_chars_removes_non_printable(spark):
 def test_trim_strings(spark):
     df = spark.createDataFrame([("  hi  ",)], ["v"])
     assert trim_strings(df).collect()[0]["v"] == "hi"
+
+
+# Scenario 2 — source renamed `unit_price` to a weird header. Prove the shared
+# `clean_column_names` (called in bronze) normalises it back to `unit_price`.
+def test_unit_price_weird_header_normalised(spark):
+    df = spark.createDataFrame([(1,)], ["Unit Price!!"])
+    assert clean_column_names(df).columns == ["unit_price"]
