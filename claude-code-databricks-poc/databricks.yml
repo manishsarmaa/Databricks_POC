@@ -1,0 +1,26 @@
+bundle:
+  name: claude_code_databricks_poc
+
+include:
+  - resources/*.yml
+
+# Free Edition: workspace host looks like https://<id>.cloud.databricks.com
+# Set it once with:  databricks configure   (or DATABRICKS_HOST / DATABRICKS_TOKEN)
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: ${var.host}
+    variables:
+      catalog: workspace
+      schema: poc
+
+variables:
+  host:
+    description: Databricks workspace URL
+    default: https://example.cloud.databricks.com
+  catalog:
+    default: workspace
+  schema:
+    default: poc

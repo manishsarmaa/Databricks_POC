@@ -1,0 +1,26 @@
+customer_id,name,email,country,signup_date
+1,Customer 1,customer1@example.com,IN,2023-01-13
+2,Customer 2,customer2@example.com,UK,2023-05-06
+3,Customer 3,customer3@example.com,US,2023-03-13
+4,Customer 4,customer4@example.com,IN,2023-12-13
+5,Customer 5,customer5@example.com,AU,2023-02-14
+6,Customer 6,customer6@example.com,AU,2023-08-05
+7,Customer 7,customer7@example.com,IN,2023-01-16
+8,Customer 8,customer8@example.com,IN,2023-04-22
+9,Customer 9,customer9@example.com,US,2023-09-16
+10,Customer 10,customer10@example.com,AU,2023-01-14
+11,Customer 11,customer11@example.com,AU,2023-04-12
+12,Customer 12,customer12@example.com,AU,2023-08-03
+13,Customer 13,customer13@example.com,US,2023-08-18
+14,Customer 14,customer14@example.com,AU,2023-05-23
+15,Customer 15,customer15@example.com,IN,2023-03-23
+16,Customer 16,customer16@example.com,DE,2023-06-24
+17,Customer 17,customer17@example.com,UK,2023-03-21
+18,Customer 18,customer18@example.com,US,2023-06-22
+19,Customer 19,customer19@example.com,IN,2023-02-17
+20,Customer 20,customer20@example.com,DE,2023-02-19
+21,Customer 21,customer21@example.com,UK,2023-06-26
+22,Customer 22,customer22@example.com,AU,2023-05-16
+23,Customer 23,customer23@example.com,IN,2023-08-24
+24,Customer 24,customer24@example.com,AU,2023-03-05
+25,Customer 25,customer25@example.com,DE,2023-02-10
