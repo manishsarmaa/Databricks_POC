@@ -1,0 +1,21 @@
+{
+  "type": "Binary",
+  "linkedServiceName": {
+    "referenceName": "AzureDataLakeStorage",
+    "type": "LinkedServiceReference"
+  },
+  "parameters": {
+    "fileName": { "type": "String", "defaultValue": "" }
+  },
+  "typeProperties": {
+    "location": {
+      "type": "AzureBlobFSLocation",
+      "fileSystem": "source",
+      "folderPath": "input",
+      "fileName": {
+        "value": "@dataset().fileName",
+        "type": "Expression"
+      }
+    }
+  }
+}

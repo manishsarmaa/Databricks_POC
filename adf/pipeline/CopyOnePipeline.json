@@ -1,0 +1,29 @@
+{
+  "activities": [
+    {
+      "name": "CopyOrders",
+      "type": "Copy",
+      "inputs": [
+        { "referenceName": "SourceDataset", "type": "DatasetReference" }
+      ],
+      "outputs": [
+        { "referenceName": "SinkDataset", "type": "DatasetReference" }
+      ],
+      "typeProperties": {
+        "source": {
+          "type": "DelimitedTextSource",
+          "storeSettings": {
+            "type": "AzureBlobFSReadSettings",
+            "recursive": true
+          }
+        },
+        "sink": {
+          "type": "DelimitedTextSink",
+          "storeSettings": {
+            "type": "AzureBlobFSWriteSettings"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "type": "DelimitedText",
+  "linkedServiceName": {
+    "referenceName": "AzureDataLakeStorage",
+    "type": "LinkedServiceReference"
+  },
+  "typeProperties": {
+    "location": {
+      "type": "AzureBlobFSLocation",
+      "fileSystem": "source",
+      "folderPath": "input",
+      "fileName": "orders.csv"
+    },
+    "columnDelimiter": ",",
+    "firstRowAsHeader": true
+  }
+}

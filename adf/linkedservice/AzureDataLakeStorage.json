@@ -1,0 +1,10 @@
+{
+  "type": "AzureBlobFS",
+  "typeProperties": {
+    "url": "https://stadfpoc78cqho.dfs.core.windows.net",
+    "accountKey": {
+      "type": "SecureString",
+      "value": "<STORAGE_ACCOUNT_KEY_PLACEHOLDER>"
+    }
+  }
+}

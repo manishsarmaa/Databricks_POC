@@ -1,0 +1,16 @@
+{
+  "type": "DelimitedText",
+  "linkedServiceName": {
+    "referenceName": "AzureDataLakeStorage",
+    "type": "LinkedServiceReference"
+  },
+  "typeProperties": {
+    "location": {
+      "type": "AzureBlobFSLocation",
+      "fileSystem": "sink",
+      "folderPath": "output"
+    },
+    "columnDelimiter": ",",
+    "firstRowAsHeader": true
+  }
+}

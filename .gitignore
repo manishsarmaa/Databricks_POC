@@ -1,0 +1,2 @@
+# Secrets — never commit storage keys, connection strings, or credentials
+adf/.secrets/

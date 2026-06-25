@@ -18,5 +18,5 @@ from src.pipelines.orders.silver import build_silver
 
 bronze = spark.read.table(f"{catalog}.{schema}.orders_bronze")
 silver = build_silver(bronze)
-silver.write.mode("overwrite").saveAsTable(f"{catalog}.{schema}.orders_silver")
+silver.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable(f"{catalog}.{schema}.orders_silver")
 display(silver)

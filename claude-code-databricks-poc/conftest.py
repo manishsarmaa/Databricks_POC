@@ -11,6 +11,13 @@ os.environ["TZ"] = "UTC"
 if hasattr(time, "tzset"):
     time.tzset()  # POSIX only; on Windows the CRT reads TZ directly
 
+# Point Spark's Python workers at the same interpreter running pytest. Without
+# this, Spark launches workers via a different (or missing) Python and they fail
+# to connect back to the driver — on Windows this surfaces as Py4JJavaError /
+# PythonWorkerFactory socket-accept failures and every Spark test errors out.
+os.environ.setdefault("PYSPARK_PYTHON", sys.executable)
+os.environ.setdefault("PYSPARK_DRIVER_PYTHON", sys.executable)
+
 import pytest
 from pyspark.sql import SparkSession
 

@@ -1,0 +1,64 @@
+{
+  "activities": [
+    {
+      "name": "GetSourceFiles",
+      "type": "GetMetadata",
+      "typeProperties": {
+        "dataset": {
+          "referenceName": "SourceParamDataset",
+          "type": "DatasetReference",
+          "parameters": { "fileName": "" }
+        },
+        "fieldList": [ "childItems" ]
+      }
+    },
+    {
+      "name": "ForEachFile",
+      "type": "ForEach",
+      "dependsOn": [
+        { "activity": "GetSourceFiles", "dependencyConditions": [ "Succeeded" ] }
+      ],
+      "typeProperties": {
+        "items": {
+          "value": "@activity('GetSourceFiles').output.childItems",
+          "type": "Expression"
+        },
+        "isSequential": false,
+        "activities": [
+          {
+            "name": "CopyFile",
+            "type": "Copy",
+            "inputs": [
+              {
+                "referenceName": "SourceParamDataset",
+                "type": "DatasetReference",
+                "parameters": {
+                  "fileName": { "value": "@item().name", "type": "Expression" }
+                }
+              }
+            ],
+            "outputs": [
+              {
+                "referenceName": "SinkParamDataset",
+                "type": "DatasetReference",
+                "parameters": {
+                  "fileName": { "value": "@item().name", "type": "Expression" }
+                }
+              }
+            ],
+            "typeProperties": {
+              "source": {
+                "type": "BinarySource",
+                "storeSettings": { "type": "AzureBlobFSReadSettings", "recursive": false }
+              },
+              "sink": {
+                "type": "BinarySink",
+                "storeSettings": { "type": "AzureBlobFSWriteSettings" }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

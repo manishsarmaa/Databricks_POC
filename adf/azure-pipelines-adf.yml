@@ -1,0 +1,107 @@
+# Azure DevOps pipeline for the ADF POC.
+# Mirrors the Databricks CI: validation runs FIRST, and the deploy+run stage only
+# proceeds if validation passed (dependsOn + condition: succeeded()). The final
+# step runs verify_copy.py, so a copy that didn't match byte-for-byte fails the build.
+
+trigger:
+  branches:
+    include:
+      - main
+      - feature/*
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  # Set these in the pipeline / variable group (keep STORAGE_ACCOUNT_KEY secret):
+  #   azureServiceConnection - ARM service connection name (az login is handled by AzureCLI@2)
+  #   RG, ADF_NAME, STORAGE_ACCOUNT - target resource names from adf/INFRA.md
+  #   STORAGE_ACCOUNT_KEY - secret; injected into the linked service at deploy time
+  workdir: adf
+
+stages:
+  - stage: Validate
+    jobs:
+      - job: validate_json
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: "3.11"
+          # Fail fast if any ADF artifact is not well-formed JSON.
+          - script: |
+              python - <<'PY'
+              import glob, json, sys
+              bad = []
+              for f in glob.glob("$(workdir)/**/*.json", recursive=True):
+                  try:
+                      json.load(open(f))
+                      print("OK", f)
+                  except Exception as e:
+                      bad.append(f"{f}: {e}")
+              if bad:
+                  print("\nINVALID JSON:"); [print(" -", b) for b in bad]; sys.exit(1)
+              PY
+            displayName: Validate ADF JSON artifacts
+
+  - stage: DeployAndRun
+    dependsOn: Validate
+    condition: succeeded()   # invalid JSON => no deploy
+    jobs:
+      - job: deploy_run_verify
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: "3.11"
+          # AzureCLI@2 performs az login via the service connection.
+          - task: AzureCLI@2
+            displayName: Deploy ADF artifacts, run pipeline, verify copy
+            inputs:
+              azureSubscription: $(azureServiceConnection)
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                set -euo pipefail
+                cd $(workdir)
+
+                # 1. Inject the secret key into a deploy-only copy of the linked service.
+                #    (.secrets/ is gitignored, so the real key never enters source control.)
+                mkdir -p .secrets
+                sed "s|<STORAGE_ACCOUNT_KEY_PLACEHOLDER>|$STORAGE_ACCOUNT_KEY|" \
+                  linkedservice/AzureDataLakeStorage.json > .secrets/AzureDataLakeStorage.deploy.json
+
+                # 2. Linked service + datasets + pipelines.
+                az datafactory linked-service create -g "$RG" --factory-name "$ADF_NAME" \
+                  --linked-service-name AzureDataLakeStorage \
+                  --properties @.secrets/AzureDataLakeStorage.deploy.json
+                for ds in dataset/*.json; do
+                  name=$(basename "$ds" .json)
+                  az datafactory dataset create -g "$RG" --factory-name "$ADF_NAME" \
+                    --dataset-name "$name" --properties @"$ds"
+                done
+                for pl in pipeline/*.json; do
+                  name=$(basename "$pl" .json)
+                  az datafactory pipeline create -g "$RG" --factory-name "$ADF_NAME" \
+                    --name "$name" --pipeline @"$pl"
+                done
+
+                # 3. Run the ForEach copy pipeline and poll until it finishes.
+                RUN_ID=$(az datafactory pipeline create-run -g "$RG" --factory-name "$ADF_NAME" \
+                  --name CopyManyForEach --query runId -o tsv)
+                echo "runId=$RUN_ID"
+                for i in $(seq 1 30); do
+                  STATUS=$(az datafactory pipeline-run show -g "$RG" --factory-name "$ADF_NAME" \
+                    --run-id "$RUN_ID" --query status -o tsv)
+                  echo "[$i] status=$STATUS"
+                  [ "$STATUS" = "Succeeded" ] && break
+                  if [ "$STATUS" = "Failed" ] || [ "$STATUS" = "Cancelled" ]; then
+                    echo "Pipeline run $STATUS"; exit 1
+                  fi
+                  sleep 10
+                done
+
+                # 4. Independent check: every source file present in sink with matching size.
+                #    verify_copy.py exits non-zero on mismatch, which fails the build.
+                python verify_copy.py
+            env:
+              # Surface the secret to the inline script as an env var.
+              STORAGE_ACCOUNT_KEY: $(STORAGE_ACCOUNT_KEY)
